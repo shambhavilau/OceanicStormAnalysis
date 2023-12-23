@@ -1,0 +1,102 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# U.S. National Oceanic and Atmospheric Administration's Storm Data Analysis
+
+## OVERVIEW
+
+Weather events cause public health and economic problems for communities and municipalities. Severe events result in fatalities, injuries, and damage. Predicting and/or preventing these outcomes is a primary objective.
+
+This analysis examines the damaging effects of severe weather conditions (e.g. hurricanes, tornadoes, thunderstorms, floods, etc.) on human populations and the economy in the U.S. from 1950 to 2011.
+
+As a result, the analysis will highlight the severe weather events associated with the greatest impact on the economy and population health.
+
+## SYNOPSIS
+
+This is an exploration of the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, which type of event, as well as the estimates of relevant fatalities, injuries, and various forms of damage. The dataset used in this project is provided by the U.S. National Oceanic and Atmospheric Administration (NOAA). This analysis discovered that tornados are responsible for a maximum number of fatalities and injuries. This analysis also discoered that floods are responsbile for maximum property damage, while Droughts cause maximum crop damage. Objective: Explore the NOAA Storm Database to help answer important questions about severe weather events.
+
+## DATA PROCESSING
+
+```{R}
+# Load Libraries
+library(dplyr)
+
+# Load Data
+storm_data <- read.csv('repdata_data_StormData.csv')
+head(storm_data)
+
+summary(storm_data)
+```
+
+## RESULTS
+
+###QUESTION 1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+
+```{r}
+#a) aggregating EVTYPE wrt injuries : aggregate the top 10 injuries by the event type and sort the output in descending order
+total_injuries <- aggregate(INJURIES~EVTYPE, storm_data, sum)
+total_injuries <- arrange(total_injuries, desc(INJURIES))
+total_injuries <- total_injuries[1:20, ]
+total_injuries
+```
+
+```{r}
+#b) aggregating EVTYPE wrt fatalities : aggregate the top 10 fatalities by the event type and sort the output in descending order
+total_fatalities <- aggregate(FATALITIES~EVTYPE,storm_data, sum)
+total_fatalities <- arrange(total_fatalities, desc(FATALITIES))
+total_fatalities <- total_fatalities[1:20, ]
+total_fatalities
+```
+
+Plotting the graph depicting the top 10 causes for Fatalities and Injuries
+
+```{r}
+# plot graphs showing the top 10 fatalities and injuries
+par(mfrow=c(1,2),mar=c(10,3,3,2))
+barplot(total_fatalities$FATALITIES,names.arg=total_fatalities$EVTYPE,las=2,col="maroon",ylab="fatalities",main="Top 10 fatalities")
+barplot(total_injuries$INJURIES,names.arg=total_injuries$EVTYPE,las=2,col="maroon",ylab="injuries",main="Top 10 Injuries")
+
+```
+
+###QUESTION 2. Across the United States, which types of events have the greatest economic consequences? An analysis of the weather events responsible for the greatest economic consequences
+
+Hypothesis: Economic consequences means damages. The two significant types of damage typically caused by weather events include 'properties and crops'
+
+We have property Damage and crop damage
+
+```{r}
+# Aggregate Data for Property Damage
+property_damage <- aggregate(PROPDMG ~ EVTYPE, data = storm_data, FUN = sum)
+property_damage <- property_damage[order(property_damage$PROPDMG, decreasing = TRUE), ]
+# 10 most harmful causes of injuries
+property_damageMax <- property_damage[1:10, ]
+print(property_damageMax)
+```
+
+```{r}
+#Aggregate Data for Crop Damage
+crop_damage <- aggregate(CROPDMG ~ EVTYPE, data = storm_data, FUN = sum)
+crop_damage <- crop_damage[order(crop_damage$CROPDMG, decreasing = TRUE), ]
+# 10 most harmful causes of injuries
+crop_damageMax <- crop_damage[1:10, ]
+print(crop_damageMax)
+```
+
+Plotting the graph depicting the top 10 causes for Property and Crop Damage
+
+```{r}
+##plot the graph showing the top 10 property and crop damages
+
+par(mfrow=c(1,2),mar=c(11,3,3,2))
+barplot(property_damageMax$PROPDMG/(10^5),names.arg=property_damageMax$EVTYPE,las=3,col="green",ylab="Property damage(billions)",main="Top10 Property Damages")
+barplot(crop_damageMax$CROPDMG/(10^5),names.arg=crop_damageMax$EVTYPE,las=3,col="green",ylab="Crop damage(billions)",main="Top10 Crop Damages")
+
+```
+
+## SUMMARY
+
+Tornados are responsible for the maximum number of fatalities and injuries, followed by Excessive Heat for fatalities and Thunderstorm wind for injuries.
+
+Floods are responsbile for maximum property damage, while Droughts cause maximum crop damage. Second major events that caused the maximum damage was Hurricanes/Typhoos for property damage and Floods for crop damage.
